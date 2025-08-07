@@ -3,6 +3,7 @@
 
 This is a simple React project that demonstrates how to fetch data from a backend API and render it in a component. It shows how to handle loading states, errors, and asynchronous data fetching using useEffect, useState, and async/await.
 
+
 🔧 Technologies Used
 
 React
@@ -14,6 +15,7 @@ Node.js (Express for backend)
 Fetch API
 
 JSON file as mock database (for backend)
+
 
 🚀 Features
 
