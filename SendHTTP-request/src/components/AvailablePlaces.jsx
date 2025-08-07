@@ -1,60 +1,86 @@
-import { useEffect, useState } from 'react';
 import Places from './Places.jsx';
 import Error from './Error.jsx';
 import { sortPlacesByDistance } from '../loc.js';
-import { fetchAvailablePlaces } from '../http.js';
+import {fetchAvailablePlaces} from '../http.js'; // 这个function不工作，所以读取数据（try catch）直接在这component中完成
+import useFetch from '../hooks/useFetch.js';
 
 // localStorage.getItem();
 
+async function fetchSortedPlaces() {
+  const places = await fetchAvailablePlaces();
 
-export default function AvailablePlaces({ onSelectPlace }) {
-  const [isFetching, setIsFetching] = useState(false);
-  const [availablePlaces, setAvailablePlaces] = useState([]);
-  const [error, setError] = useState();
-
-  useEffect(() => {
-    async function fetchPlaces() {
-      setIsFetching(true);
-      
-      try {
-        // const places = await fetchAvailablePlaces();
-
-        const response = await fetch('http://localhost:3000/places');
-        const resData = await response.json();
-
-        if (!response.ok) {
-            // 如果响应不是ok状态，抛出错误
-            throw new Error(resData.message || 'Failed to fetch places.');
-        }
-
-        navigator.geolocation.getCurrentPosition((position) => {
+  return new Promise((resolve) => {
+    navigator.geolocation.getCurrentPosition((position) => {
           const sortedPlaces = sortPlacesByDistance(
-            resData.places, 
+            places, 
             position.coords.latitude,
             position.coords.longitude
           );
-          setAvailablePlaces(sortedPlaces);
 
-          setIsFetching(false);
+          resolve(sortedPlaces);
         });
+  })
 
-        setAvailablePlaces(resData.places);
-      } catch (error) {
-        setError({message: error.message || 'Could not fetch places'});
-        setIsFetching(false);
-      }
-    }
-    // fetch('http://localhost:3000/places')
-    //   .then((response) => {
-    //     return response.json();
-    //   })
-    //   .then((resData) => {
-    //     setAvailablePlaces(resData.places);
-    //   });
-    // 另一种方法
 
-    fetchPlaces();
-  }, []);
+}
+
+
+export default function AvailablePlaces({ onSelectPlace }) {
+  // const [isFetching, setIsFetching] = useState(false);
+  // const [availablePlaces, setAvailablePlaces] = useState([]);
+  // const [error, setError] = useState();
+
+  const {
+    isFetching, 
+    error, 
+    fetchedData: availablePlaces,
+    // setFetchedData: setAvailablePlaces,
+  } = useFetch(fetchSortedPlaces, []);
+
+  // useEffect(() => {
+  //   async function fetchPlaces() {
+  //     setIsFetching(true);
+      
+  //     try {
+  //       const places = await fetchAvailablePlaces();
+
+  //       // const response = await fetch('http://localhost:3000/places');
+  //       // const resData = await response.json();
+
+  //       // if (!response.ok) {
+  //       //     // 如果响应不是ok状态，抛出错误
+  //       //     throw new Error(resData.message || 'Failed to fetch places.');
+  //       // }
+
+
+  //       navigator.geolocation.getCurrentPosition((position) => {
+  //         const sortedPlaces = sortPlacesByDistance(
+  //           places, 
+  //           position.coords.latitude,
+  //           position.coords.longitude
+  //         );
+  //         setAvailablePlaces(sortedPlaces);
+
+  //         setIsFetching(false);
+  //       });
+
+  //       setAvailablePlaces(resData.places);
+  //     } catch (error) {
+  //       setError({message: error.message || 'Could not fetch places'});
+  //       setIsFetching(false);
+  //     }
+  //   }
+  //   // fetch('http://localhost:3000/places')
+  //   //   .then((response) => {
+  //   //     return response.json();
+  //   //   })
+  //   //   .then((resData) => {
+  //   //     setAvailablePlaces(resData.places);
+  //   //   });
+  //   // 另一种方法
+
+  //   fetchPlaces();
+  // }, []);
   // fetchPlaces()，当组件加载时执行一次，获取可用地点数据
   // 当正在请求后段数据时，isFetching为true，显示加载文本
   // const response是从后端获取的可用地点数据，resData.places是解析后的地点数组

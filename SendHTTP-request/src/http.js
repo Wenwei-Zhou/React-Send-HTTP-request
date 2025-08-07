@@ -10,7 +10,7 @@ export async function fetchAvailablePlaces() {
     return resData.places;
 }
 
-export async function fetchuserPlaces() {
+export async function fetchUserPlaces() {
     const response = await fetch('http://localhost:3000/user-places');
     const resData = await response.json();
 

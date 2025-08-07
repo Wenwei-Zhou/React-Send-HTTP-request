@@ -1,49 +1,33 @@
-import { useRef, useState, useCallback, useEffect } from 'react';
+import { useRef, useState, useCallback } from 'react';
 
 import Places from './components/Places.jsx';
 import Modal from './components/Modal.jsx';
 import DeleteConfirmation from './components/DeleteConfirmation.jsx';
 import logoImg from './assets/logo.png';
 import AvailablePlaces from './components/AvailablePlaces.jsx';
-import { fetchuserPlaces, updateUserPlaces } from './http.js';
+import { fetchUserPlaces, updateUserPlaces } from './http.js';
+import useFetch from './hooks/useFetch.js';
 import Error from './components/Error.jsx';
 
 function App() {
   const selectedPlace = useRef();
 
-  const [userPlaces, setUserPlaces] = useState([]);
+  // const [userPlaces, setUserPlaces] = useState([]);
   const [errorUpdatingPlaces, setErrorUpdatingPlaces] = useState();
   // 用于存储用户选择的地点和更新地点时可能出现的错误
 
-  const [isFetching, setIsFetching] = useState(false);
+  // const [isFetching, setIsFetching] = useState(false);
   // 用于指示是否正在获取用户地点数据
-  const [error, setError] = useState();
+  // const [error, setError] = useState();
 
   const [modalIsOpen, setModalIsOpen] = useState(false);
 
-  useEffect(() => {
-    async function fetchPlaces() {
-      setIsFetching(true);
-      try {
-        const places = await fetchuserPlaces();
-        // 调用fetchuserPlaces函数获取用户地点数据
-
-        setUserPlaces(places);
-        // 将获取到的地点数据存储在userPlaces状态中
-      } catch (error) {
-        setError({message: error.message || 'Failed to fetch user places.'})
-      }
-
-      setIsFetching(false);
-    }
-
-    fetchPlaces(); // 这里是执行function fetchPlaces()，因为上面只是在创建function
-
-    // 当组件加载时执行一次，获取用户地点数据
-    // 如果获取失败，设置错误状态
-    // 如果获取成功，将地点数据存储在userPlaces状态中
-    // 当数据加载完成后，isFetching为false，显示用户地点列表
-  }, []);
+  const {
+    isFetching, 
+    error, 
+    fetchedData: userPlaces, 
+    setFetchedData: setUserPlaces
+  } = useFetch(fetchUserPlaces, []);
 
   function handleStartRemovePlace(place) {
     setModalIsOpen(true);
@@ -108,7 +92,7 @@ function App() {
    
 
     setModalIsOpen(false);
-  }, [userPlaces]);
+  }, [userPlaces, setUserPlaces]);
 
   function handleError() {
     setErrorUpdatingPlaces(null);
@@ -155,7 +139,9 @@ function App() {
         {/* 如果发生错误，显示错误消息 */}
         {/* 如果没有错误，显示用户已选地点列表 */}
 
-        <AvailablePlaces onSelectPlace={handleSelectPlace} />
+        <AvailablePlaces 
+          onSelectPlace={handleSelectPlace} 
+        />
       </main>
     </>
   );
